@@ -1,0 +1,1612 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --concrete:#E7E8E4; --panel:#FFFFFF;
+    --steel:#2B3338; --steel-2:#47535A;
+    --ink:#1F2528; --ink-soft:#6B7479;
+    --line:#D3D6D1; --line-soft:#E7E9E5;
+    --hazard:#EDB200; --hazard-deep:#C79400;
+    --ok:#2E7D5B; --warn:#C77700; --bad:#BE3A2B;
+    --ok-bg:#E4F0EA; --warn-bg:#FAEEDC; --bad-bg:#F8E5E2;
+    --blue:#2F6B8F; --blue-bg:#E3EDF3;
+    --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{background:var(--concrete);color:var(--ink);font-family:var(--sans);
+       font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .num{font-variant-numeric:tabular-nums}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px 80px}
+
+  .topbar{background:var(--steel);color:#fff;margin:0 -20px;padding:20px 20px 0}
+  .topbar-inner{max-width:1200px;margin:0 auto}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .brand .sub{color:#9AA5AB;font-size:14px}
+  .whoami{appearance:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;
+     background:#3B464C;color:#C3CBD0;border:1px solid #4E5A61;border-radius:999px;
+     padding:5px 13px;display:inline-flex;align-items:center;gap:7px}
+  .whoami:hover{background:#45525A;color:#fff}
+  .whoami i{width:7px;height:7px;border-radius:50%;background:#8A949A;flex:none}
+  .whoami i.on{background:#5FBF8C} .whoami i.off{background:#E08070} .whoami i.local{background:var(--hazard)}
+  .fleet-stat{margin-left:auto;display:flex;gap:22px}
+  .fleet-stat div{text-align:right}
+  .fleet-stat b{display:block;font-size:23px;font-weight:700;line-height:1.2}
+  .fleet-stat b.hot{color:#FF9A8B} .fleet-stat b.mid{color:var(--hazard)}
+  .fleet-stat span{font-size:12.5px;color:#9AA5AB}
+
+  .tabs{display:flex;gap:2px;margin-top:18px;overflow-x:auto}
+  .tab{appearance:none;border:0;cursor:pointer;background:#3B464C;color:#C3CBD0;
+       font-family:inherit;font-size:15.5px;font-weight:600;white-space:nowrap;
+       padding:12px 19px;border-radius:3px 3px 0 0;transition:background .12s,color .12s}
+  .tab:hover{background:#45525A;color:#fff}
+  .tab[aria-selected="true"]{background:var(--concrete);color:var(--ink)}
+  .tab:focus-visible{outline:2px solid var(--hazard);outline-offset:-2px}
+  .tab .badge{display:inline-block;margin-left:6px;background:var(--bad);color:#fff;
+       font-size:12px;padding:0 6px;border-radius:9px;vertical-align:1px}
+
+  .pane{display:none;padding-top:26px} .pane.on{display:block}
+  .pane-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .pane-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .pane-head p{margin:4px 0 0;font-size:14.5px;color:var(--ink-soft);max-width:68ch}
+
+  button.act{appearance:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;
+       padding:9px 17px;border-radius:3px;border:1px solid var(--steel);background:var(--steel);color:#fff}
+  button.act:hover{background:#1B2226}
+  button.act.ghost{background:transparent;color:var(--steel);border-color:var(--line)}
+  button.act.ghost:hover{background:#DCDEDA;border-color:#B8BCB7}
+  button.act.key{background:var(--hazard);border-color:var(--hazard-deep);color:#231A00}
+  button.act.key:hover{background:var(--hazard-deep)}
+  button:focus-visible{outline:2px solid var(--hazard);outline-offset:2px}
+  button[disabled]{opacity:.42;cursor:default}
+
+  .bay{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:14px;overflow:hidden}
+  .bay-head{display:flex;align-items:center;gap:12px;background:var(--steel);color:#fff;padding:10px 14px 10px 0}
+  .hazard{width:9px;align-self:stretch;flex:none;
+     background:repeating-linear-gradient(45deg,var(--hazard) 0 7px,var(--steel) 7px 14px)}
+  .bay-head h3{margin:0;font-size:17px;font-weight:700}
+  .bay-head .count{font-size:13.5px;color:#9AA5AB}
+  .bay-head .spacer{margin-left:auto}
+  .bay-head button{appearance:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;
+     background:transparent;color:var(--hazard);border:1px solid #5A666D;padding:7px 14px;border-radius:3px}
+  .bay-head button:hover{background:var(--hazard);border-color:var(--hazard);color:#231A00}
+  .empty{padding:24px 24px;color:var(--ink-soft);font-size:15px;line-height:1.6}
+
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+     padding:10px 14px;border-bottom:1px solid var(--line);background:#FAFAF8;white-space:nowrap}
+  td{padding:12px 14px;border-bottom:1px solid var(--line-soft);font-size:15.5px;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#FBFAF6}
+  td.model{font-weight:600} td.note{color:var(--ink-soft);font-size:14.5px}
+  .rowact{text-align:right;white-space:nowrap}
+  .rowact button{appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;
+     font-size:13.5px;color:var(--ink-soft);padding:5px 8px;border-radius:3px}
+  .rowact button:hover{background:#E7E8E4;color:var(--ink)}
+  .rowact button.del:hover{background:var(--bad-bg);color:var(--bad)}
+  .rowact button.go{color:var(--steel);font-weight:600;border:1px solid var(--line);background:#FCFCFA}
+  .rowact button.go:hover{background:var(--hazard);border-color:var(--hazard-deep);color:#231A00}
+
+  .chip{display:inline-block;font-size:13px;font-weight:600;padding:3px 9px;border-radius:2px;white-space:nowrap}
+  .chip.ok{background:var(--ok-bg);color:var(--ok)}
+  .chip.warn{background:var(--warn-bg);color:var(--warn)}
+  .chip.bad{background:var(--bad-bg);color:var(--bad)}
+  .chip.none{background:#E7E8E4;color:var(--ink-soft)}
+  .chip.blue{background:var(--blue-bg);color:var(--blue)}
+  .plate{display:inline-block;font-weight:700;font-size:14.5px;padding:3px 9px;
+     border:1.5px solid var(--steel);border-radius:3px;background:#FDFCF7;white-space:nowrap;
+     font-variant-numeric:tabular-nums}
+  .plate.blank{border-style:dashed;border-color:var(--line);color:var(--ink-soft);font-weight:500}
+  .sys{display:inline-block;font-size:12.5px;font-weight:600;color:var(--steel-2);
+     background:#E9ECEE;padding:3px 8px;border-radius:2px}
+  .act-chip{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 8px;border-radius:2px;white-space:nowrap}
+  .a-교체{background:#F6E2DE;color:#A33B2A} .a-청소{background:var(--blue-bg);color:var(--blue)}
+  .a-급지{background:var(--ok-bg);color:var(--ok)} .a-점검{background:#E7E8E4;color:var(--ink-soft)}
+  .a-보충{background:var(--warn-bg);color:var(--warn)} .a-물빼기{background:var(--warn-bg);color:var(--warn)}
+
+  .gauge{display:flex;align-items:center;gap:8px;min-width:150px}
+  .gauge .bar{flex:1;height:6px;background:#E7E9E5;border-radius:3px;overflow:hidden;min-width:40px}
+  .gauge .bar i{display:block;height:100%;background:var(--ok);border-radius:3px}
+  .gauge.warn .bar i{background:var(--hazard)} .gauge.bad .bar i{background:var(--bad)}
+  .gauge .v{font-size:13.5px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .gauge.warn .v{color:var(--warn)} .gauge.bad .v{color:var(--bad)} .gauge.ok .v{color:var(--ink-soft)}
+
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .filters button{appearance:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;
+     background:var(--panel);color:var(--ink-soft);border:1px solid var(--line);padding:7px 15px;border-radius:999px}
+  .filters button:hover{border-color:#B8BCB7;color:var(--ink)}
+  .filters button[aria-pressed="true"]{background:var(--steel);border-color:var(--steel);color:#fff}
+  .filters .sep{width:1px;height:20px;background:var(--line);margin:0 5px}
+  .filters select,.filters input[type=text]{font-family:inherit;font-size:14px;font-weight:600;
+     color:var(--ink);background:var(--panel);border:1px solid var(--line);
+     padding:7px 11px;border-radius:999px;max-width:220px}
+  .filters select:focus,.filters input[type=text]:focus{outline:0;border-color:var(--steel)}
+  .filters input[type=text]{font-weight:400;min-width:180px}
+  .filters select.on,.filters input.on{background:var(--steel);border-color:var(--steel);color:#fff}
+  .filters label.fl{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-right:-2px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  th.grp{background:#EDEFEB;color:var(--ink);font-size:14.5px;font-weight:700;border-top:1px solid var(--line)}
+  th.grp .sm{font-weight:500;color:var(--ink-soft);font-size:13px;margin-left:7px}
+
+  .alerts{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .alert{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);
+     border-left:4px solid var(--line);border-radius:3px;padding:12px 15px;text-align:left;
+     cursor:pointer;font-family:inherit;appearance:none}
+  .alert b{display:block;font-size:26px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+  .alert span{font-size:13.5px;color:var(--ink-soft)}
+  .alert.bad{border-left-color:var(--bad)} .alert.bad b{color:var(--bad)}
+  .alert.warn{border-left-color:var(--hazard)} .alert.warn b{color:var(--hazard-deep)}
+  .alert.none{border-left-color:var(--line)} .alert.none b{color:var(--ink-soft)}
+  .alert[aria-pressed="true"]{background:#F3F4F1;border-color:var(--steel)}
+
+  .log-grid{background:var(--panel);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .log-row{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+  .log-row:last-child{border-bottom:0}
+  .log-row .who{flex:1;min-width:170px}
+  .log-row .who b{display:block;font-size:15.5px;font-weight:600}
+  .log-row .who span{font-size:13px;color:var(--ink-soft)}
+  .log-row .prev{font-size:13.5px;color:var(--ink-soft);min-width:128px;font-variant-numeric:tabular-nums}
+  .log-row input[type=number]{width:120px;font-family:inherit;font-size:16.5px;font-weight:600;text-align:right;
+     padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:#FCFCFA;font-variant-numeric:tabular-nums}
+  .log-row input:focus{outline:0;border-color:var(--steel);background:#fff}
+  .log-row input.bad{border-color:var(--bad);background:#FDF6F5}
+  .log-row .diff{min-width:82px;font-size:14px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .log-row .diff.plus{color:var(--ok)} .log-row .diff.err{color:var(--bad)}
+  .log-row .chk{appearance:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
+     border:1px solid var(--line);background:#FCFCFA;color:var(--steel);padding:8px 14px;border-radius:3px;min-width:112px}
+  .log-row .chk:hover{background:#ECEEEA}
+  .log-row .chk.done{background:var(--ok-bg);border-color:#BBD9CA;color:var(--ok)}
+  .log-row .chk.ng{background:var(--bad-bg);border-color:#EBC6C0;color:var(--bad)}
+  .logbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .logbar input[type=date]{font-family:inherit;font-size:15.5px;padding:9px 12px;
+     border:1px solid var(--line);border-radius:3px;background:var(--panel)}
+
+  /* 점검가이드 */
+  .gcard{background:var(--panel);border:1px solid var(--line);border-radius:3px;
+     padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;
+     width:100%;text-align:left;font-family:inherit;margin-bottom:8px}
+  .gcard:hover{border-color:var(--steel);background:#FBFAF6}
+  .gcard .tt{flex:1;min-width:0}
+  .gcard .tt b{display:block;font-size:16px;font-weight:600}
+  .gcard .tt span{font-size:13.5px;color:var(--ink-soft)}
+  .gcard .arrow{color:var(--ink-soft);font-size:19px}
+  .gback{appearance:none;border:0;background:none;cursor:pointer;font-family:inherit;
+     font-size:14.5px;font-weight:600;color:var(--steel-2);padding:7px 0;margin-bottom:10px}
+  .gback:hover{color:var(--ink)}
+  .ghead{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--hazard);
+     border-radius:3px;padding:15px 17px;margin-bottom:16px}
+  .ghead h3{margin:0 0 5px;font-size:18px;font-weight:700}
+  .ghead .meta{font-size:14.5px;color:var(--ink-soft)}
+  .ghead .ref{font-size:13.5px;color:var(--steel-2);margin-top:7px}
+
+  h3.sect{margin:26px 0 11px;font-size:16px;font-weight:700;letter-spacing:-.01em;
+     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  h3.sect span{font-size:13px;font-weight:500;color:var(--ink-soft)}
+  h3.sect:first-of-type{margin-top:4px}
+
+  .legend{background:var(--panel);border:1px solid var(--line);border-radius:3px;
+     padding:13px 16px;margin-bottom:16px}
+  .legend h4{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+  .legend dl{margin:0;display:flex;flex-wrap:wrap;gap:7px 20px}
+  .legend div{display:flex;gap:7px;align-items:baseline}
+  .legend dt{font-size:12.5px;font-weight:700;color:var(--steel);background:#E9ECEE;
+     padding:1px 7px;border-radius:2px;flex:none}
+  .legend dd{margin:0;font-size:13.5px;color:var(--ink-soft)}
+
+  .caps{display:flex;flex-wrap:wrap;gap:0;background:var(--panel);border:1px solid var(--line);
+     border-radius:3px;margin-bottom:16px;overflow:hidden}
+  .caps div{flex:1;min-width:110px;padding:10px 13px;border-right:1px solid var(--line-soft)}
+  .caps div:last-child{border-right:0}
+  .caps b{display:block;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .caps span{font-size:12.5px;color:var(--ink-soft)}
+
+  dialog{border:0;border-radius:4px;padding:0;width:min(470px,calc(100vw - 32px));
+     box-shadow:0 18px 50px rgba(20,25,28,.28);color:var(--ink);font-family:var(--sans)}
+  dialog.wide{width:min(640px,calc(100vw - 32px))}
+  dialog::backdrop{background:rgba(24,29,32,.55)}
+  .dlg-head{background:var(--steel);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px}
+  .dlg-head h3{margin:0;font-size:17px;font-weight:700}
+  .dlg-head .where{margin-left:auto;font-size:13.5px;color:var(--hazard)}
+  .dlg-body{padding:18px 20px 4px;max-height:64vh;overflow:auto}
+  .dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px 18px;flex-wrap:wrap}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+  .field .hint{font-size:12.5px;color:var(--ink-soft);font-weight:400;margin-left:5px}
+  .field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+     padding:10px 12px;border:1px solid var(--line);border-radius:3px;background:#FCFCFA}
+  .field textarea{resize:vertical;min-height:58px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--steel);background:#fff}
+  .field.invalid input,.field.invalid select{border-color:var(--bad);background:#FDF6F5}
+  .err{display:none;font-size:13px;color:var(--bad);margin-top:4px}
+  .field.invalid .err{display:block}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* 일상점검 다이얼로그 */
+  .ck-grp{font-size:13px;font-weight:700;color:var(--ink-soft);background:#EDEFEB;
+     padding:9px 13px;margin:0 -20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .ck-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .ck-row .nm{flex:1;min-width:0;font-size:15px}
+  .ck-row .nm em{font-style:normal;font-size:12.5px;color:var(--ink-soft);display:block}
+  .ck-btns{display:flex;gap:4px;flex:none}
+  .ck-btns button{appearance:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
+     border:1px solid var(--line);background:#FCFCFA;color:var(--ink-soft);padding:7px 14px;border-radius:3px}
+  .ck-btns button[aria-pressed="true"][data-v="ok"]{background:var(--ok);border-color:var(--ok);color:#fff}
+  .ck-btns button[aria-pressed="true"][data-v="ng"]{background:var(--bad);border-color:var(--bad);color:#fff}
+
+  .aibox{background:#F7F5EF;border:1px solid #E2DCC8;border-left:4px solid var(--hazard);
+     border-radius:3px;padding:14px 16px;margin-bottom:14px}
+  .aihead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .aihead b{font-size:14.5px;font-weight:700}
+  .aisum{margin:0 0 11px;font-size:14.5px;line-height:1.55}
+  .ailist{margin:0 0 10px;padding-left:20px}
+  .ailist li{font-size:14.5px;line-height:1.55;margin-bottom:9px}
+  .ailist li b{display:inline-block;background:#E9ECEE;color:var(--steel);
+     font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:2px;margin-right:6px}
+  .ailist li em{display:block;font-style:normal;font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+  .airel{font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+  .aifoot{font-size:12.5px;color:var(--ink-soft);border-top:1px solid #E2DCC8;padding-top:9px;margin-top:4px}
+
+  .exp-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .exp-row:last-child{border-bottom:0}
+  .exp-row .t{flex:1;min-width:0}
+  .exp-row .t b{display:block;font-size:15.5px;font-weight:600}
+  .exp-row .t span{font-size:13px;color:var(--ink-soft)}
+  .exp-row button{appearance:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;
+     border:1px solid var(--line);background:#FCFCFA;color:var(--steel);padding:7px 13px;border-radius:3px;flex:none}
+  .exp-row button:hover{background:#ECEEEA;border-color:#B8BCB7}
+  .drop{border:1.5px dashed var(--line);border-radius:4px;background:#FAFAF8;padding:26px 18px;text-align:center}
+  .drop.over{border-color:var(--hazard);background:#FDF8E8}
+  .drop p{margin:0 0 15px;font-size:15px;color:var(--ink-soft);line-height:1.5}
+  .sum{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px;flex-wrap:wrap}
+  .sum div{flex:1;min-width:84px;padding:11px 12px;border-right:1px solid var(--line-soft)}
+  .sum div:last-child{border-right:0}
+  .sum b{display:block;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+  .sum span{font-size:12.5px;color:var(--ink-soft)}
+  .mode{display:block;border:1px solid var(--line);border-radius:3px;padding:11px 13px;margin-bottom:8px;cursor:pointer}
+  .mode:has(input:checked){border-color:var(--steel);background:#F6F7F5}
+  .mode input{margin:0 8px 0 0;vertical-align:-1px}
+  .mode b{font-size:15.5px;font-weight:600}
+  .mode span{display:block;font-size:13.5px;color:var(--ink-soft);margin-top:2px;padding-left:22px;line-height:1.45}
+  .warnbox{background:var(--warn-bg);border-left:3px solid var(--warn);padding:10px 12px;
+     font-size:13.5px;color:#7A4B00;line-height:1.55;margin-top:12px}
+  .infobox{background:#EDF1F3;border-left:3px solid var(--steel-2);padding:11px 14px;
+     font-size:13.5px;color:var(--steel-2);line-height:1.55;margin-bottom:16px;border-radius:0 3px 3px 0}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
+     background:var(--steel);color:#fff;font-size:15px;font-weight:600;padding:12px 22px;
+     border-radius:3px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60;
+     max-width:calc(100vw - 40px);text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  @media (max-width:820px){
+    .fleet-stat{width:100%;margin:12px 0 0;justify-content:flex-start;gap:24px}
+    .fleet-stat div{text-align:left}
+    table thead{display:none}
+    table,tbody,tr,td{display:block;width:100%}
+    tbody tr{border-bottom:1px solid var(--line);padding:6px 0}
+    tbody tr:last-child{border-bottom:0}
+    tbody tr.grprow{padding:0}
+    td{border:0;padding:5px 14px;display:flex;gap:11px;font-size:15.5px}
+    td::before{content:attr(data-l);flex:none;width:88px;font-size:13px;color:var(--ink-soft);
+       font-weight:600;padding-top:1px}
+    td.model{font-size:17px;padding-top:9px}
+    .rowact{justify-content:flex-end;padding-bottom:8px}
+    .rowact::before{display:none}
+    .two{grid-template-columns:1fr}
+    .gauge{min-width:0;width:100%}
+    th.grp{display:block;width:100%}
+  }
+</style>
+
+<div class="wrap">
+  <div class="topbar"><div class="topbar-inner">
+    <div class="brand">
+      <h1>중장비 관리대장</h1><span class="sub" id="today"></span>
+      <button class="whoami" id="btnWho"><i id="dot"></i><span id="whoTxt">연결 중…</span></button>
+      <div class="fleet-stat">
+        <div><b class="num" id="statEquip">0</b><span>장비</span></div>
+        <div><b class="num hot" id="statOver">0</b><span>주기 초과</span></div>
+        <div><b class="num mid" id="statSoon">0</b><span>주기 임박</span></div>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-pane="equip">장비현황</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="log">가동일지</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="part" id="tabPart">장비관리</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="guide">점검가이드</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="hist">이력</button>
+      <button class="tab" id="btnImport" style="margin-left:auto;border-radius:3px 3px 0 0">가져오기</button>
+      <button class="tab" id="btnExport" style="border-radius:3px 3px 0 0">내보내기</button>
+    </div>
+  </div></div>
+
+  <section class="pane on" id="pane-equip" role="tabpanel">
+    <div class="pane-head"><div><h2>장비현황</h2>
+      <p>구역별 보유 장비입니다. 등록하면 표준 점검가이드가 자동으로 적용되어 가동일지와 장비관리가 바로 돌아갑니다.</p></div></div>
+    <div id="yard"></div>
+  </section>
+
+  <section class="pane" id="pane-log" role="tabpanel">
+    <div class="pane-head"><div><h2>가동일지</h2>
+      <p>계기판 누적시간을 그대로 적고, 일상점검을 같이 체크합니다. 이 시간이 장비관리의 정비 주기를 진행시킵니다.</p></div></div>
+    <div class="logbar">
+      <input type="date" id="logDate">
+      <button class="act key" id="logSave">가동시간 저장</button>
+      <span style="font-size:12.5px;color:var(--ink-soft)" id="logHint"></span>
+    </div>
+    <div class="log-grid" id="logGrid"></div>
+    <h3 style="font-size:14px;margin:26px 0 10px">최근 기록</h3>
+    <div class="card" id="logTable"></div>
+  </section>
+
+  <section class="pane" id="pane-part" role="tabpanel">
+    <div class="pane-head"><div><h2>장비관리</h2>
+      <p>표준 점검가이드의 50시간 이상 항목을 장비별로 펼쳐 주기가 짧은 것부터 보여줍니다.
+         실시 기록을 누르면 주기가 다시 시작되고 이력에 남습니다.
+         주기나 용량 자체를 바꾸려면 점검가이드에서 고치세요.</p></div></div>
+    <div class="alerts" id="partAlerts"></div>
+    <div class="filters" id="partFilters"></div>
+    <div class="card" id="partTable"></div>
+  </section>
+
+  <section class="pane" id="pane-guide" role="tabpanel">
+    <div class="pane-head"><div><h2>표준 점검가이드</h2>
+      <p id="guideLead">전 장비에 공통으로 적용되는 기준입니다. 여기서 고치면 모든 장비에 반영됩니다.</p></div></div>
+    <div id="guideBody"></div>
+  </section>
+
+  <section class="pane" id="pane-hist" role="tabpanel">
+    <div class="pane-head"><div><h2>이력</h2>
+      <p>교체·정비를 완료한 기록과, 일상점검에서 이상으로 잡힌 항목입니다.</p></div></div>
+    <div class="filters" id="histFilters"></div>
+    <div class="card" id="histTable"></div>
+  </section>
+</div>
+
+<!-- 장비 -->
+<dialog id="dlgEquip"><form method="dialog">
+  <div class="dlg-head"><h3 id="eqTitle">장비 추가</h3><span class="where" id="eqWhere"></span></div>
+  <div class="dlg-body">
+    <div class="field" id="f-plate"><label for="eqPlate">차량번호</label>
+      <input id="eqPlate" autocomplete="off" placeholder="예: 부산05가1234 / 관리번호">
+      <div class="err" id="plateErr">차량번호를 입력하세요.</div></div>
+    <div class="field" id="f-model"><label for="eqModel">모델명</label>
+      <input id="eqModel" autocomplete="off" placeholder="예: 두산 530LC5">
+      <div class="err">모델명을 입력하세요.</div></div>
+    <div class="two">
+      <div class="field" id="f-year"><label for="eqYear">연식</label>
+        <input id="eqYear" type="number" inputmode="numeric" placeholder="2019">
+        <div class="err">1970~올해 사이로 입력하세요.</div></div>
+      <div class="field" id="f-hours"><label for="eqHours">운행시간 <span class="hint">시간</span></label>
+        <input id="eqHours" type="number" inputmode="numeric" min="0" placeholder="8400">
+        <div class="err">0 이상 숫자로 입력하세요.</div></div>
+    </div>
+    <div class="field"><label for="eqNote">기타</label>
+      <textarea id="eqNote" placeholder="차대번호, 어태치먼트, 담당 기사 등"></textarea></div>
+  </div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act key" id="eqSave">저장</button></div>
+</form></dialog>
+
+<!-- 항목 -->
+<dialog id="dlgItem"><form method="dialog">
+  <div class="dlg-head"><h3 id="itTitle">항목 추가</h3><span class="where">표준 가이드 · 전 장비 공통</span></div>
+  <div class="dlg-body">
+    <div class="two">
+      <div class="field"><label for="itCycle">주기</label><select id="itCycle"></select></div>
+      <div class="field"><label for="itSys">부위</label><select id="itSys"></select></div>
+    </div>
+    <div class="field" id="f-itname"><label for="itName">점검 대상</label>
+      <input id="itName" placeholder="예: 엔진 오일 및 필터"><div class="err">항목명을 입력하세요.</div></div>
+    <div class="two">
+      <div class="field"><label for="itAct">작업</label><select id="itAct"></select></div>
+      <div class="field"><label for="itQty">용량·수량</label><input id="itQty" placeholder="예: 45 L"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="itLH">마지막 실시 <span class="hint">가동시간</span></label>
+        <input id="itLH" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="itLD">마지막 실시일</label><input id="itLD" type="date"></div>
+    </div>
+    <div class="field"><label for="itNote">비고</label><input id="itNote" placeholder="부품번호, 조건 등"></div>
+  </div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act key" id="itSave">저장</button></div>
+</form></dialog>
+
+<!-- 완료 기록 -->
+<dialog id="dlgDone"><form method="dialog">
+  <div class="dlg-head"><h3>실시 완료 기록</h3></div>
+  <div class="dlg-body">
+    <p style="margin:0 0 14px;font-size:14px" id="dnWhat"></p>
+    <div class="two">
+      <div class="field"><label for="dnDate">실시일</label><input id="dnDate" type="date"></div>
+      <div class="field" id="f-dnh"><label for="dnHours">실시 시점 가동시간</label>
+        <input id="dnHours" type="number" inputmode="numeric" min="0">
+        <div class="err">0 이상 숫자로 입력하세요.</div></div>
+    </div>
+    <div class="field"><label for="dnNote">비고</label>
+      <input id="dnNote" placeholder="사용 부품, 작업자, 비용 등"></div>
+  </div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act key" id="dnSave">기록</button></div>
+</form></dialog>
+
+<!-- 일상점검 -->
+<dialog id="dlgCheck" class="wide"><form method="dialog">
+  <div class="dlg-head"><h3>일상점검</h3><span class="where" id="ckWhere"></span></div>
+  <div class="dlg-body" id="ckBody"></div>
+  <div class="dlg-foot">
+    <button type="button" class="act ghost" id="ckAllOk" style="margin-right:auto">전부 정상</button>
+    <button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act key" id="ckSave">저장</button></div>
+</form></dialog>
+
+<!-- 내보내기 -->
+<dialog id="dlgExport"><form method="dialog">
+  <div class="dlg-head"><h3>데이터 내보내기</h3></div>
+  <div class="dlg-body">
+    <p style="margin:0 0 12px;font-size:13px;color:var(--ink-soft);line-height:1.5">
+      복사를 누르면 구글 시트에 붙여넣을 수 있는 형태로 복사됩니다.</p>
+    <div id="expList"></div></div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>닫기</button></div>
+</form></dialog>
+
+<!-- 가져오기 -->
+<input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+<dialog id="dlgImport"><form method="dialog">
+  <div class="dlg-head"><h3 id="impTitle">데이터 가져오기</h3></div>
+  <div class="dlg-body" id="impBody"></div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act key" id="impApply" style="display:none">적용</button></div>
+</form></dialog>
+
+<!-- 삭제 -->
+<dialog id="dlgDel"><form method="dialog">
+  <div class="dlg-head"><h3 id="delTitle">삭제</h3></div>
+  <div class="dlg-body"><p style="margin:0 0 6px;font-size:14px" id="delBody"></p></div>
+  <div class="dlg-foot"><button type="button" class="act ghost" data-close>취소</button>
+    <button type="button" class="act" id="delGo" style="background:var(--bad);border-color:var(--bad)">삭제</button></div>
+</form></dialog>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const LOCATIONS = ["분철장","고철장A","고철장B","절단장","마그네트A","마그네트B"];
+const SYSTEMS = ["엔진","유압","동력전달","하부·주행","캐빈","전장","어태치먼트","안전"];
+const ACTIONS = ["점검","점검·보충","점검·청소","점검·물빼기","청소","교체","급지","물빼기"];
+const CYC = [10,50,250,500,1000,2000,4000,6000,12000];
+const CYC_LABEL = {10:"10시간 · 일상",50:"50시간 · 주간",250:"250시간 · 월간",500:"500시간 · 3개월",
+  1000:"1,000시간 · 6개월",2000:"2,000시간 · 연간",4000:"4,000시간 · 격해년",
+  6000:"6,000시간 · 3년째",12000:"12,000시간 · 6년째"};
+const TRACK_FROM = 50, SOON = 0.9;
+
+const STD = {
+  ref:"두산 DX530LC-5L 정비가이드 4-18 ~ 4-21 기준",
+  caps:[["엔진오일 교체량","45 L"],["작동유 교체량","250 L"],["냉각수 교체량","54.1 L"],
+        ["선회 감속기","2 × 5 L"],["주행 감속기","2 × 9 L"],
+        ["연료탱크 용량","626 L"],["요소수탱크 용량","70 L"]],
+  legend:[["V","정비 및 보충"],["C","청소"],["D","물빼기"],["F","최초 한번 교체"],
+          ["F100","최초 100시간 동안 매 10시간마다"],["W10","수중 작업일 경우 매 10시간마다"]],
+  items:[
+      [10,"엔진","엔진 오일 레벨","점검·보충","",""],
+      [10,"유압","유압 계통 누유","점검","",""],
+      [10,"유압","작동유 탱크 유량","점검·보충","",""],
+      [10,"엔진","연료 계통 누유","점검","",""],
+      [10,"엔진","연료 레벨","점검·보충","",""],
+      [10,"엔진","요소수(DEF·AdBlue) 탱크","점검·보충","",""],
+      [10,"엔진","메인 수분 분리기(연료 프리 필터)","점검·물빼기","",""],
+      [10,"동력전달","선회 감속기 오일 레벨","점검·보충","",""],
+      [10,"엔진","오일 쿨러·라디에이터 앞 먼지망","청소","","고철장은 막힘 빈발"],
+      [10,"엔진","냉각수량","점검·보충","",""],
+      [10,"캐빈","윈도우 워셔액","점검·보충","",""],
+      [10,"어태치먼트","버킷 투스·사이드 커터 마모","점검","",""],
+      [10,"엔진","냉각팬 블레이드","점검","",""],
+      [10,"엔진","공기 흡입 계통","점검","",""],
+      [10,"안전","시트 벨트","점검","",""],
+      [10,"전장","후방카메라","점검","","장착된 경우"],
+      [10,"안전","각종 미러 파손·조정","점검","",""],
+      [10,"안전","구조 크랙·불량 용접","점검","",""],
+      [10,"전장","스위치류·주행 알람","점검","","장착된 경우"],
+      [10,"안전","파일럿 컷 오프 스위치","점검","",""],
+      [10,"전장","외부등·혼·지시등·모니터","점검","",""],
+      [10,"엔진","시동능력·배기가스·이상음","점검","","정상온도 도달 후 운전상태 확인"],
+      [10,"유압","모든 조정부 운전","점검","",""],
+
+      [50,"어태치먼트","프론트 어태치먼트 핀(버킷 부근)","급지","","그리스 6개 · 수중 작업 시 매 10시간"],
+      [50,"동력전달","선회 베어링","급지","","그리스 3개 · 수중 작업 시 매 10시간"],
+      [50,"엔진","연료탱크 내 물·침전물","물빼기","",""],
+      [50,"전장","에어 컴프레서","점검·물빼기","",""],
+      [50,"엔진","팬 벨트 크랙·마모·장력","점검","","최초 50시간 사용 후"],
+      [50,"하부·주행","트랙(링크·슈·롤러·아이들러)","점검","","장력·헐거움·마모·손상"],
+
+      [250,"어태치먼트","붐·암 조인트 핀","급지","그리스 11개","수중 작업 시 매 10시간"],
+      [250,"하부·주행","트랙 스프링","급지","그리스 2개","수중 작업 시 매 10시간"],
+      [250,"유압","브레이커 필터 엘리먼트","교체","엘리먼트 1","선택사양"],
+      [250,"엔진","오일 배스 프리클리너","점검·청소","엘리먼트 1","선택사양"],
+      [250,"유압","작동유 리턴 필터","교체","엘리먼트 2","최초 250시간 후 1회"],
+      [250,"유압","파일럿 필터","교체","엘리먼트 1","최초 250시간 후 1회"],
+      [250,"어태치먼트","프론트·어태치먼트 핀과 부싱 마모","점검","",""],
+      [250,"전장","배터리 액면","점검","",""],
+      [250,"안전","너트·볼트 풀림","점검","",""],
+      [250,"엔진","연료계통 호스 클램프","점검","",""],
+
+      [500,"동력전달","선회 피니언 기어","급지","그리스 1개",""],
+      [500,"엔진","엔진 오일","교체","엔진오일 45 L",""],
+      [500,"엔진","엔진 오일 필터","교체","엘리먼트 1",""],
+      [500,"엔진","엔진 연료 필터","교체","엘리먼트 2",""],
+      [500,"엔진","메인 수분 분리기(연료 프리 필터)","교체","카트리지 1",""],
+      [500,"캐빈","에어컨 필터 (외부)","청소","엘리먼트 1",""],
+      [500,"캐빈","에어컨 필터 (내부)","점검·청소","엘리먼트 1",""],
+      [500,"엔진","라디에이터·오일쿨러·인터쿨러·연료쿨러·에어컨 컨덴서 코어","청소","코어 각 1",""],
+      [500,"엔진","에어 클리너 (외부) 필터","청소","엘리먼트 1",""],
+      [500,"엔진","요소수(DEF) 필러 필터","청소","카트리지 1",""],
+      [500,"동력전달","주행 감속기 오일 레벨","점검·보충","기어오일 2 × 9 L",""],
+      [500,"전장","에어 컴프레서 필터","청소","엘리먼트 1","선택사양"],
+      [500,"동력전달","주행 감속기 오일","교체","기어오일 2 × 9 L","트랙 양쪽 · 최초 500시간 후 1회"],
+      [500,"동력전달","선회 감속기 오일","교체","기어오일 2 × 5 L","드레인 및 최초 500시간 후 1회"],
+
+      [1000,"동력전달","선회 감속기","급지","그리스 2개","수중 작업 시 매 10시간"],
+      [1000,"유압","작동유 탱크 브리더 필터","교체","엘리먼트 1","분진 많으면 주기 전이라도 청소·교체"],
+      [1000,"유압","작동유 리턴 필터","교체","엘리먼트 2",""],
+      [1000,"유압","파일럿 필터","교체","엘리먼트 1",""],
+      [1000,"엔진","요소수(DEF) 필터","교체","엘리먼트 1",""],
+      [1000,"엔진","요소수(DEF) 브리더 필터","교체","카트리지 1",""],
+      [1000,"동력전달","선회 감속기 오일","교체","기어오일 2 × 5 L",""],
+      [1000,"캐빈","에어컨 필터 (외부)","교체","엘리먼트 1",""],
+      [1000,"캐빈","에어컨 필터 (내부)","교체","엘리먼트 1",""],
+      [1000,"엔진","드라이브 벨트","점검","",""],
+      [1000,"엔진","연료 캡 필터","교체","엘리먼트 1",""],
+      [1000,"엔진","엔진 점검 및 조정","점검","",""],
+
+      [2000,"엔진","원심 분리형 오일 클리너","청소","엘리먼트 1",""],
+      [2000,"엔진","에어 클리너 (외부) 필터","교체","엘리먼트 1",""],
+      [2000,"엔진","에어 클리너 (내부) 필터","교체","엘리먼트 1",""],
+      [2000,"동력전달","주행 감속기 오일","교체","기어오일 2 × 9 L",""],
+      [2000,"유압","작동유 석션 필터","청소","스트레이너 1",""],
+      [2000,"전장","알터네이터·스타터","점검","",""],
+      [2000,"엔진","진동 방지용 마운팅 러버","점검","",""],
+      [2000,"안전","주기적 점검항목 실시 및 결과 기록","점검","",""],
+      [2000,"안전","구조 크랙·용접선·구조적 손상","점검","",""],
+      [2000,"엔진","조정밸브 간극","점검","",""],
+      [2000,"엔진","헤드 볼트 토크","점검","",""],
+
+      [4000,"안전","주요 부품 주기적 교체","교체","","매뉴얼 별도 리스트 확인 필요"],
+
+      [6000,"엔진","냉각수","교체","냉각수 54.1 L",""],
+      [6000,"유압","작동유","교체","작동유 250 L",""],
+
+      [12000,"안전","호스 내구수명 한계 도달","교체","","ISO 8331 / EN 982"]]
+};
+
+let state = {equipment:[], master:[], prog:{}, meter:[], done:[]};
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const n=v=>Number(v).toLocaleString("ko-KR");
+const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
+const numOrNull=v=>{if(v==null||String(v).trim()==="")return null;const x=Number(String(v).replace(/[,\s]/g,""));return Number.isFinite(x)?x:null;};
+const norm=p=>String(p??"").replace(/\s/g,"").toUpperCase();
+
+function pruneMaster(){
+  const before=state.master.length;
+  const drop=state.master.filter(i=>i.cycleH===10 && i.name.indexOf("암·버킷 조인트 핀")>=0);
+  if(!drop.length) return false;
+  const ids=new Set(drop.map(i=>i.id));
+  state.master=state.master.filter(i=>!ids.has(i.id));
+  Object.keys(state.prog).forEach(k=>{ if(ids.has(k.split("|")[1])) delete state.prog[k]; });
+  return before!==state.master.length;
+}
+
+function buildMaster(){
+  return STD.items.map(([cycleH,sys,name,action,qty,note])=>
+    ({id:uid(),cycleH,sys,name,action,qty:qty||"",note:note||""}));
+}
+
+/* ===================================================================
+   Firebase 설정  ─  여기 두 곳만 고치면 됩니다
+   =================================================================== */
+const firebaseConfig = {
+  apiKey:            "PASTE_API_KEY",
+  authDomain:        "PASTE_PROJECT.firebaseapp.com",
+  projectId:         "PASTE_PROJECT",
+  storageBucket:     "PASTE_PROJECT.appspot.com",
+  messagingSenderId: "PASTE_SENDER_ID",
+  appId:             "PASTE_APP_ID"
+};
+
+// 현장 구분 코드. 이 값을 아는 사람만 데이터에 접근합니다.
+// 다른 현장을 하나 더 운영하려면 새 코드를 쓰면 데이터가 완전히 분리됩니다.
+const SITE = "yard-7fq2m9xkzb4p";
+/* =================================================================== */
+
+const LOCAL_KEY = "hev-local-v4";
+let db=null, online=false, ready=false;
+let shadow={equipment:[],master:[],meter:[],done:[],prog:{}};
+let me = "";
+
+const clone = o => JSON.parse(JSON.stringify(o));
+const byId  = arr => { const m={}; (arr||[]).forEach(x=>m[x.id]=x); return m; };
+const docId = k => k.replace("|","__");
+const progKey = id => id.replace("__","|");
+
+function setStatus(kind,text){
+  const d=$("#dot"); if(!d) return;
+  d.className = kind;
+  $("#whoTxt").textContent = text;
+}
+function whoLabel(){ return me ? `${me}` : "이름 설정"; }
+
+function askName(force){
+  try{
+    const cur = localStorage.getItem("hev-me") || "";
+    if(cur && !force){ me=cur; return; }
+  }catch(e){}
+  const v = prompt("기록자 이름을 입력하세요.\n입력한 기록에 이 이름이 남습니다.", me||"");
+  if(v!=null){ me=v.trim(); try{ localStorage.setItem("hev-me", me); }catch(e){} }
+}
+
+/* ---------- 로컬 저장 (설정 전 / 오프라인 대비) ---------- */
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LOCAL_KEY);
+    if(raw){ const v=JSON.parse(raw);
+      ["equipment","master","meter","done"].forEach(k=>{ if(Array.isArray(v[k])) state[k]=v[k]; });
+      if(v.prog) state.prog=v.prog; }
+  }catch(e){}
+}
+function saveLocal(){
+  try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ---------- Firestore ---------- */
+let fb=null;
+async function initFirebase(){
+  if(String(firebaseConfig.apiKey).startsWith("PASTE_")){
+    setStatus("local","로컬 모드");
+    loadLocal();
+    if(!state.master.length) state.master=buildMaster();
+    pruneMaster();
+    ready=true; renderAll();
+    toast("Firebase 설정 전입니다. 이 브라우저에만 저장됩니다.");
+    return;
+  }
+  try{
+    const [{initializeApp},{getAuth,signInAnonymously},fs] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
+    ]);
+    fb=fs;
+    const app=initializeApp(firebaseConfig);
+    await signInAnonymously(getAuth(app));
+    db=fs.getFirestore(app);
+    online=true;
+    setStatus("on", whoLabel());
+    subscribeAll();
+  }catch(err){
+    console.error(err);
+    online=false;
+    setStatus("off","연결 실패 · 로컬");
+    loadLocal();
+    if(!state.master.length) state.master=buildMaster();
+    ready=true; renderAll();
+    toast("Firebase 연결에 실패해 이 브라우저에만 저장됩니다.");
+  }
+}
+
+const COLLS=["equipment","master","meter","done"];
+let arrived={}, renderTimer=null;
+function bumpRender(){
+  clearTimeout(renderTimer);
+  renderTimer=setTimeout(()=>{ ready=true; renderAll(); }, 60);
+}
+function subscribeAll(){
+  COLLS.forEach(c=>{
+    fb.onSnapshot(fb.collection(db,"sites",SITE,c), snap=>{
+      state[c]=snap.docs.map(d=>({id:d.id, ...d.data()}));
+      shadow[c]=clone(state[c]);
+      arrived[c]=true;
+      if(c==="master"){
+        if(!state.master.length) seedMaster();
+        else if(pruneMaster()) save();
+      }
+      bumpRender();
+    }, err=>{ console.error(err); setStatus("off","동기화 오류"); });
+  });
+  fb.onSnapshot(fb.collection(db,"sites",SITE,"prog"), snap=>{
+    const p={}; snap.docs.forEach(d=>{ p[progKey(d.id)]=d.data(); });
+    state.prog=p; shadow.prog=clone(p); arrived.prog=true; bumpRender();
+  }, err=>console.error(err));
+}
+async function seedMaster(){
+  state.master=buildMaster();
+  await save();
+  toast(`표준 점검가이드 ${n(state.master.length)}개 항목을 등록했습니다.`);
+}
+
+/* ---------- 변경분만 올리기 ---------- */
+let queued=false;
+async function save(){
+  if(!online){ saveLocal(); return; }
+  if(queued) return; queued=true;
+  await Promise.resolve(); queued=false;
+  try{
+    let batch=fb.writeBatch(db), ops=0;
+    const flush=async()=>{ if(ops){ await batch.commit(); batch=fb.writeBatch(db); ops=0; } };
+
+    for(const c of COLLS){
+      const cur=byId(state[c]), old=byId(shadow[c]);
+      for(const id of Object.keys(cur)){
+        const {id:_ , ...body}=cur[id];
+        if(JSON.stringify(cur[id])!==JSON.stringify(old[id])){
+          batch.set(fb.doc(db,"sites",SITE,c,id), body); ops++;
+          if(ops>=400) await flush();
+        }
+      }
+      for(const id of Object.keys(old)) if(!cur[id]){
+        batch.delete(fb.doc(db,"sites",SITE,c,id)); ops++;
+        if(ops>=400) await flush();
+      }
+    }
+    for(const k of Object.keys(state.prog)){
+      if(JSON.stringify(state.prog[k])!==JSON.stringify(shadow.prog[k])){
+        batch.set(fb.doc(db,"sites",SITE,"prog",docId(k)), state.prog[k]); ops++;
+        if(ops>=400) await flush();
+      }
+    }
+    for(const k of Object.keys(shadow.prog)) if(!state.prog[k]){
+      batch.delete(fb.doc(db,"sites",SITE,"prog",docId(k))); ops++;
+      if(ops>=400) await flush();
+    }
+    await flush();
+    shadow=clone(state);
+  }catch(err){
+    console.error(err);
+    toast("저장에 실패했습니다. 인터넷 연결을 확인하세요.");
+  }
+}
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2800); }
+
+async function load(){
+  askName(false);
+  await initFirebase();
+  if(online) setStatus("on", whoLabel());
+}
+
+
+/* ===== 파생 ===== */
+const eqById=id=>state.equipment.find(e=>e.id===id);
+const plateHtml=p=>p?`<span class="plate">${esc(p)}</span>`:`<span class="plate blank">미등록</span>`;
+const eqLabel=e=>e?`${e.plate?e.plate+" · ":""}${e.model}`:"삭제된 장비";
+const meterOf=id=>state.meter.filter(m=>m.eqId===id).sort((a,b)=>b.date.localeCompare(a.date));
+const isTracked=i=>i.cycleH>=TRACK_FROM;
+const trackedMaster=()=>state.master.filter(isTracked);
+const dailyMaster=()=>state.master.filter(i=>i.cycleH<TRACK_FROM);
+const pkey=(eqId,itId)=>`${eqId}|${itId}`;
+const progOf=(eqId,itId)=>state.prog[pkey(eqId,itId)]||null;
+
+function itemState(it,eq){
+  if(!isTracked(it)) return {level:"routine",pct:0,text:"일상 체크",sort:-2};
+  const pr=progOf(eq.id,it.id);
+  if(!pr||pr.h==null||eq.hours==null) return {level:"unset",pct:0,text:"기준 미입력",sort:-1};
+  const left=pr.h+it.cycleH-eq.hours, pct=1-left/it.cycleH;
+  return {level: left<0?"bad":(pct>=SOON?"warn":"ok"), pct:Math.max(0,Math.min(1.15,pct)),
+          text: left>=0?`${n(left)} h 남음`:`${n(-left)} h 초과`, sort:pct};
+}
+function eqStates(eq){ return trackedMaster().map(it=>({it,s:itemState(it,eq)})); }
+function dueOf(eqId){
+  const eq=eqById(eqId); if(!eq) return [];
+  return eqStates(eq).filter(r=>r.s.level==="bad"||r.s.level==="warn").sort((a,b)=>b.s.sort-a.s.sort);
+}
+function counts(){
+  let over=0,soon=0,unset=0;
+  state.equipment.forEach(eq=>eqStates(eq).forEach(({s})=>{
+    if(s.level==="bad")over++; else if(s.level==="warn")soon++; else if(s.level==="unset")unset++; }));
+  return {over,soon,unset};
+}
+function renderStats(){
+  const c=counts();
+  $("#statEquip").textContent=n(state.equipment.length);
+  $("#statOver").textContent=n(c.over);
+  $("#statSoon").textContent=n(c.soon);
+  $("#tabPart").innerHTML="장비관리"+(c.over?`<span class="badge">${c.over}</span>`:"");
+}
+
+/* ===== 장비현황 ===== */
+function renderYard(){
+  $("#yard").innerHTML=LOCATIONS.map(loc=>{
+    const list=state.equipment.filter(e=>e.loc===loc);
+    const body=list.length?`<table><thead><tr>
+      <th style="width:150px">차량번호</th><th>모델명</th><th style="width:70px">연식</th>
+      <th style="width:104px">운행시간</th><th style="width:150px">주기 상태</th>
+      <th style="width:120px">오늘 점검</th><th>기타</th><th style="width:100px"></th>
+      </tr></thead><tbody>${list.map(e=>{
+        const ss=eqStates(e).map(r=>r.s);
+        const ov=ss.filter(s=>s.level==="bad").length, sn=ss.filter(s=>s.level==="warn").length;
+        const st=ov?`<span class="chip bad">초과 ${ov}</span>`+(sn?` <span class="chip warn">${sn}</span>`:"")
+          :sn?`<span class="chip warn">임박 ${sn}</span>`
+          :ss.every(s=>s.level==="unset")?`<span class="chip none">기준점 미입력</span>`
+          :`<span class="chip ok">여유</span>`;
+        const m=state.meter.find(x=>x.eqId===e.id&&x.date===logDate);
+        const ck=m&&m.checks?m.checks:{}, cnt=Object.keys(ck).length;
+        const ng=Object.values(ck).filter(v=>v==="ng").length;
+        const cs=!cnt?`<span class="chip none">미실시</span>`
+          :ng?`<span class="chip bad">이상 ${ng}</span>`:`<span class="chip ok">정상</span>`;
+        return `<tr>
+          <td data-l="차량번호">${plateHtml(e.plate)}</td>
+          <td class="model" data-l="모델명">${esc(e.model)}</td>
+          <td class="num" data-l="연식">${e.year||"—"}</td>
+          <td class="num" data-l="운행시간">${e.hours==null?"—":n(e.hours)+" h"}</td>
+          <td data-l="주기">${st}</td>
+          <td data-l="오늘 점검">${cs}</td>
+          <td class="note" data-l="기타">${esc(e.note)||"—"}</td>
+          <td class="rowact"><button data-edit="${e.id}">수정</button>
+            <button class="del" data-del="${e.id}">삭제</button></td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">등록된 장비가 없습니다.</div>`;
+    return `<div class="bay"><div class="bay-head"><div class="hazard"></div><h3>${loc}</h3>
+      <span class="count num">${list.length}대</span><span class="spacer"></span>
+      <button data-add="${loc}">장비 추가</button></div>${body}</div>`;
+  }).join("");
+}
+
+/* ===== 가동일지 ===== */
+let logDate=todayStr();
+function renderLog(){
+  $("#logDate").value=logDate;
+  if(!state.equipment.length){
+    $("#logGrid").innerHTML=`<div class="empty">장비현황에서 장비를 먼저 등록하세요.</div>`;
+    $("#logTable").innerHTML=""; $("#logHint").textContent=""; return;
+  }
+  const daily=dailyMaster();
+  $("#logHint").textContent="계기판 누적시간을 그대로 입력하세요";
+  $("#logGrid").innerHTML=state.equipment.map(e=>{
+    const hist=meterOf(e.id);
+    const onDate=hist.find(m=>m.date===logDate);
+    const prev=hist.filter(m=>m.date<logDate)[0];
+    const base=prev?prev.hours:(e.hours??null);
+    const ck=onDate&&onDate.checks?onDate.checks:{};
+    const done=Object.keys(ck).length, ng=Object.values(ck).filter(v=>v==="ng").length;
+    const nd=dueOf(e.id).length;
+    const cls=ng?"chk ng":(done?"chk done":"chk");
+    const txt=ng?`이상 ${ng}건`:(done?`점검 ${done}/${daily.length}`:`일상점검 ${daily.length}`);
+    return `<div class="log-row" data-eq="${e.id}">
+      <div class="who"><b>${esc(eqLabel(e))}</b><span>${esc(e.loc)}</span></div>
+      <div class="prev">${prev?`${prev.date} · ${n(prev.hours)} h`:(base!=null?`등록 시점 ${n(base)} h`:"이전 기록 없음")}</div>
+      <input type="number" inputmode="numeric" min="0" data-base="${base==null?"":base}"
+        value="${onDate?onDate.hours:""}" placeholder="${base!=null?n(base):"계기판"}">
+      <div class="diff"></div>
+      <button class="${cls}" data-check="${e.id}">${txt}${nd?` · 정비 ${nd}`:""}</button></div>`;
+  }).join("");
+  $$("#logGrid input[type=number]").forEach(i=>{i.oninput=()=>calcDiff(i);calcDiff(i);});
+
+  const rows=[...state.meter].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,120);
+  $("#logTable").innerHTML=rows.length?`<table><thead><tr>
+    <th style="width:104px">날짜</th><th style="width:140px">차량번호</th><th>모델명</th>
+    <th style="width:106px">계기판</th><th style="width:98px">가동시간</th>
+    <th style="width:124px">일상점검</th><th style="width:100px">기록자</th>
+    <th style="width:52px"></th></tr></thead><tbody>${rows.map(m=>{
+      const e=eqById(m.eqId);
+      const prev=state.meter.filter(x=>x.eqId===m.eqId&&x.date<m.date).sort((a,b)=>b.date.localeCompare(a.date))[0];
+      const d=prev?m.hours-prev.hours:null;
+      const ck=m.checks||{}, cnt=Object.keys(ck).length, ng=Object.values(ck).filter(v=>v==="ng").length;
+      const cs=!cnt?`<span class="chip none">미실시</span>`
+        :ng?`<span class="chip bad">이상 ${ng}</span>`:`<span class="chip ok">정상 ${cnt}</span>`;
+      return `<tr>
+        <td class="num" data-l="날짜">${m.date}</td>
+        <td data-l="차량번호">${e?plateHtml(e.plate):`<span class="plate blank">—</span>`}</td>
+        <td class="model" data-l="모델명">${esc(e?e.model:"삭제된 장비")}</td>
+        <td class="num" data-l="계기판">${n(m.hours)} h</td>
+        <td class="num" data-l="가동" style="color:${d>0?"var(--ok)":"var(--ink-soft)"}">${d==null?"—":(d>0?"+":"")+n(d)+" h"}</td>
+        <td data-l="점검">${cs}</td>
+        <td class="note" data-l="기록자">${esc(m.by)||"—"}</td>
+        <td class="rowact"><button class="del" data-delmeter="${m.id}">삭제</button></td></tr>`;}).join("")}</tbody></table>`
+    :`<div class="empty">아직 기록이 없습니다.</div>`;
+}
+function calcDiff(inp){
+  const d=inp.parentElement.querySelector(".diff");
+  const base=inp.dataset.base===""?null:Number(inp.dataset.base);
+  const v=numOrNull(inp.value);
+  inp.classList.remove("bad"); d.className="diff";
+  if(v==null){d.textContent="";return;}
+  if(base==null){d.textContent="기준 설정";return;}
+  const diff=v-base;
+  if(diff<0){inp.classList.add("bad");d.classList.add("err");d.textContent="역행";return;}
+  d.classList.add("plus"); d.textContent="+"+n(diff)+" h";
+}
+function ensureMeter(eqId,date){
+  let m=state.meter.find(x=>x.eqId===eqId&&x.date===date);
+  if(!m){ const eq=eqById(eqId);
+    m={id:uid(),eqId,date,hours:eq&&eq.hours!=null?eq.hours:0,checks:{},ckNote:"",ai:null,by:me||""};
+    state.meter.push(m); }
+  if(!m.checks) m.checks={};
+  return m;
+}
+$("#logDate").onchange=()=>{logDate=$("#logDate").value||todayStr();renderAll();};
+$("#logSave").onclick=()=>{
+  let saved=0,skipped=0;
+  $$("#logGrid .log-row").forEach(row=>{
+    const inp=row.querySelector("input[type=number]"), v=numOrNull(inp.value);
+    if(v==null) return;
+    const base=inp.dataset.base===""?null:Number(inp.dataset.base);
+    if(base!=null&&v<base){skipped++;return;}
+    const eqId=row.dataset.eq, m=ensureMeter(eqId,logDate);
+    m.hours=v; m.by=me||m.by||"";
+    const eq=eqById(eqId), latest=meterOf(eqId)[0];
+    if(eq&&(!latest||latest.date<=logDate)) eq.hours=Math.max(eq.hours??0,v);
+    saved++;
+  });
+  if(!saved&&!skipped){toast("입력된 값이 없습니다.");return;}
+  save(); renderAll();
+  toast(skipped?`${n(saved)}건 저장. ${n(skipped)}건은 이전보다 작아 건너뛰었습니다.`:`${n(saved)}건 저장했습니다.`);
+};
+
+/* ===== 일상점검 ===== */
+let ckEq=null, ckTmp={};
+function renderDueBlock(eqId){
+  const due=dueOf(eqId);
+  if(!due.length) return `<div class="ck-grp">도래한 정비 없음</div>
+    <p style="font-size:14px;color:var(--ink-soft);padding:12px 0 2px">
+      50시간 이상 주기 항목 중 지금 도래했거나 지난 것이 없습니다.</p>`;
+  return `<div class="ck-grp">도래한 정비 · ${due.length}건</div>`
+    + due.map(({it,s})=>`<div class="ck-row">
+        <div class="nm">${esc(it.name)}
+          <span class="act-chip a-${esc(it.action.split("·")[0])}">${esc(it.action)}</span>
+          <em>${esc(it.sys)} · ${n(it.cycleH)}h 주기${it.qty?" · "+esc(it.qty):""}</em></div>
+        <span class="chip ${s.level}">${s.text}</span>
+        <div class="ck-btns"><button type="button" data-ckdone="${it.id}">완료</button></div>
+      </div>`).join("");
+}
+function openCheck(eqId){
+  const eq=eqById(eqId); ckEq=eqId;
+  const m=state.meter.find(x=>x.eqId===eqId && x.date===logDate);
+  ckTmp=Object.assign({}, m&&m.checks?m.checks:{});
+  $("#ckWhere").textContent=`${eqLabel(eq)} · ${logDate}`;
+  drawCheck();
+  if(!$("#dlgCheck").open) $("#dlgCheck").showModal();
+}
+function drawCheck(){
+  const m=state.meter.find(x=>x.eqId===ckEq && x.date===logDate);
+  let html=renderDueBlock(ckEq);
+  [10].forEach(c=>{
+    const rows=state.master.filter(i=>i.cycleH===c);
+    if(!rows.length) return;
+    html+=`<div class="ck-grp">${CYC_LABEL[c]} · ${rows.length}개 항목</div>`;
+    html+=rows.map(i=>`<div class="ck-row">
+      <div class="nm">${esc(i.name)}
+        <span class="act-chip a-${esc(i.action.split("·")[0])}">${esc(i.action)}</span>
+        ${i.note?`<em>${esc(i.note)}</em>`:""}</div>
+      <div class="ck-btns">
+        <button type="button" data-ck="${i.id}" data-v="ok" aria-pressed="${ckTmp[i.id]==="ok"}">정상</button>
+        <button type="button" data-ck="${i.id}" data-v="ng" aria-pressed="${ckTmp[i.id]==="ng"}">이상</button>
+      </div></div>`).join("");
+  });
+  html+=`<div class="field" style="margin-top:18px"><label for="ckNote">특이사항</label>
+    <textarea id="ckNote" placeholder="예: 유압 계통에서 미세한 누유 흔적, 선회 시 금속성 소음">${esc(m&&m.ckNote?m.ckNote:"")}</textarea></div>
+    <div id="ckAiOut"></div>`;
+  $("#ckBody").innerHTML=html;
+}
+$("#ckAllOk").onclick=()=>{
+  dailyMaster().forEach(i=>ckTmp[i.id]="ok");
+  $$("#ckBody [data-ck]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v==="ok"));
+};
+$("#ckSave").onclick=()=>{
+  const m=ensureMeter(ckEq,logDate);
+  m.checks=Object.assign({},ckTmp);
+  m.ckNote=($("#ckNote")||{value:""}).value.trim();
+  m.by=me||m.by||"";
+  save(); renderAll(); $("#dlgCheck").close();
+  const ng=Object.values(m.checks).filter(v=>v==="ng").length;
+  toast(ng?`일상점검 저장. 이상 ${ng}건은 이력에 남습니다.`:"일상점검을 저장했습니다.");
+};
+
+/* ===== 장비관리 ===== */
+let partEq="전체", partSys="전체", partAct="전체", partQ="", partLv="전체";
+let partSig="";
+function renderPart(){
+  const c=counts();
+  $("#partAlerts").innerHTML=`
+    <button class="alert bad" data-plv="초과" aria-pressed="${partLv==="초과"}"><b>${n(c.over)}</b><span>주기 초과</span></button>
+    <button class="alert warn" data-plv="임박" aria-pressed="${partLv==="임박"}"><b>${n(c.soon)}</b><span>주기 임박 (90% 경과)</span></button>
+    <button class="alert none" data-plv="미설정" aria-pressed="${partLv==="미설정"}"><b>${n(c.unset)}</b><span>기준점 미입력</span></button>`;
+
+  const sig=state.equipment.map(e=>e.id+"~"+e.plate+"~"+e.model).join("|")
+    +"##"+[...new Set(state.master.map(i=>i.sys))].sort().join(",");
+  if(sig!==partSig){
+    partSig=sig;
+    const syss=[...new Set(trackedMaster().map(i=>i.sys))];
+    const acts=[...new Set(trackedMaster().map(i=>i.action))];
+    $("#partFilters").innerHTML=`
+      <label class="fl" for="fEq">차량번호</label>
+      <select id="fEq"><option value="전체">전체</option>${
+        state.equipment.map(e=>`<option value="${e.id}">${esc(e.plate||e.model)}</option>`).join("")}</select>
+      <label class="fl" for="fSys">부위</label>
+      <select id="fSys"><option value="전체">전체</option>${
+        SYSTEMS.filter(x=>syss.includes(x)).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("")}</select>
+      <label class="fl" for="fAct">작업</label>
+      <select id="fAct"><option value="전체">전체</option>${
+        ACTIONS.filter(x=>acts.includes(x)).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("")}</select>
+      <input type="text" id="fQ" placeholder="점검 대상 검색" value="${esc(partQ)}">
+      <button id="fReset">초기화</button>`;
+    $("#fEq").onchange =e=>{partEq=e.target.value; markFilters(); renderPartTable();};
+    $("#fSys").onchange=e=>{partSys=e.target.value; markFilters(); renderPartTable();};
+    $("#fAct").onchange=e=>{partAct=e.target.value; markFilters(); renderPartTable();};
+    $("#fQ").oninput  =e=>{partQ=e.target.value.trim(); markFilters(); renderPartTable();};
+    $("#fReset").onclick=()=>{partEq=partSys=partAct="전체"; partQ=""; partLv="전체";
+      $("#fEq").value=$("#fSys").value=$("#fAct").value="전체"; $("#fQ").value="";
+      markFilters(); renderPart();};
+  }
+  markFilters();
+  renderPartTable();
+}
+function markFilters(){
+  const set=(id,v)=>{const el=$(id); if(el) el.classList.toggle("on", v);};
+  set("#fEq",partEq!=="전체"); set("#fSys",partSys!=="전체");
+  set("#fAct",partAct!=="전체"); set("#fQ",!!partQ);
+}
+function renderPartTable(){
+  if(!state.equipment.length){
+    $("#partTable").innerHTML=`<div class="empty">장비현황에서 장비를 먼저 등록하세요.</div>`; return; }
+
+  let rows=[];
+  state.equipment.forEach(eq=>{ if(partEq!=="전체"&&eq.id!==partEq) return;
+    trackedMaster().forEach(it=>rows.push({eq,it,s:itemState(it,eq)})); });
+  if(partSys!=="전체") rows=rows.filter(r=>r.it.sys===partSys);
+  if(partAct!=="전체") rows=rows.filter(r=>r.it.action===partAct);
+  if(partQ){ const q=partQ.toLowerCase();
+    rows=rows.filter(r=>r.it.name.toLowerCase().includes(q)||(r.it.note||"").toLowerCase().includes(q)); }
+  if(partLv==="초과") rows=rows.filter(r=>r.s.level==="bad");
+  if(partLv==="임박") rows=rows.filter(r=>r.s.level==="warn");
+  if(partLv==="미설정") rows=rows.filter(r=>r.s.level==="unset");
+
+  rows.sort((a,b)=> a.it.cycleH-b.it.cycleH
+    || a.it.sys.localeCompare(b.it.sys,"ko")
+    || a.it.name.localeCompare(b.it.name,"ko")
+    || String(a.eq.plate||"").localeCompare(String(b.eq.plate||""),"ko"));
+
+  const bulk=partEq!=="전체"?`<div style="padding:13px;border-top:1px solid var(--line)">
+      <button class="act ghost" data-baseall="${partEq}">기준점 일괄 설정</button></div>`:"";
+  if(!rows.length){ $("#partTable").innerHTML=`<div class="empty">해당 조건에 맞는 항목이 없습니다.</div>${bulk}`; return; }
+
+  let html=`<div style="padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink-soft)">
+      ${n(rows.length)}개 항목</div>
+    <table><thead><tr>
+    <th style="width:150px">차량번호</th><th style="width:98px">부위</th><th>점검 대상</th>
+    <th style="width:100px">작업</th><th style="width:150px">용량 및 수량 기준</th>
+    <th style="width:104px">주기</th><th style="width:160px">마지막 실시</th>
+    <th style="width:118px"></th>
+    </tr></thead><tbody>`;
+  let lastC=null;
+  rows.forEach(({eq,it})=>{
+    if(it.cycleH!==lastC){
+      lastC=it.cycleH;
+      const cnt=rows.filter(r=>r.it.cycleH===lastC).length;
+      html+=`<tr class="grprow"><th class="grp" colspan="8">${CYC_LABEL[it.cycleH]||n(it.cycleH)+"시간"}
+        <span class="sm">${cnt}개</span></th></tr>`;
+    }
+    const pr=progOf(eq.id,it.id);
+    const last=pr?`${pr.d||"날짜 미상"}${pr.h!=null?` · ${n(pr.h)} h`:""}`:`<span style="color:var(--warn)">미입력</span>`;
+    html+=`<tr>
+      <td data-l="차량번호">${plateHtml(eq.plate)}</td>
+      <td data-l="부위"><span class="sys">${esc(it.sys)}</span></td>
+      <td class="model" data-l="대상">${esc(it.name)}</td>
+      <td data-l="작업"><span class="act-chip a-${esc(it.action.split("·")[0])}">${esc(it.action)}</span></td>
+      <td class="note" data-l="기준">${esc(it.qty)||"—"}</td>
+      <td class="num" data-l="주기">${n(it.cycleH)} h</td>
+      <td class="note" data-l="마지막">${last}</td>
+      <td class="rowact"><button class="go" data-done="${eq.id}|${it.id}">실시 기록</button></td></tr>`;
+  });
+  html+=`</tbody></table>${bulk}`;
+  $("#partTable").innerHTML=html;
+}
+
+/* ===== 표준 점검가이드 ===== */
+function renderGuide(){
+  let html=`<div class="ghead"><h3>표준 점검가이드</h3>
+    <div class="meta">전 장비 공통 · ${n(state.master.length)}개 항목</div>
+    <div class="ref">근거 · ${esc(STD.ref)}</div></div>
+    <div class="caps">${STD.caps.map(c=>`<div><b>${esc(c[1])}</b><span>${esc(c[0])}</span></div>`).join("")}</div>
+    <div class="legend"><h4>매뉴얼 표기 범례</h4><dl>${
+      STD.legend.map(l=>`<div><dt>${esc(l[0])}</dt><dd>${esc(l[1])}</dd></div>`).join("")}</dl></div>`;
+
+  const routine=dailyMaster();
+  if(routine.length){
+    html+=`<h3 class="sect">일상 점검표<span>10시간 · 매일. 가동일지에서 장비별로 체크합니다</span></h3>
+      <div class="card"><table><thead><tr>
+        <th style="width:100px">부위</th><th>점검 대상</th><th style="width:100px">작업</th>
+        <th>비고</th><th style="width:100px"></th></tr></thead><tbody>`;
+    [10].forEach(c=>{
+      const rs=routine.filter(i=>i.cycleH===c); if(!rs.length) return;
+      html+=`<tr class="grprow"><th class="grp" colspan="5">${CYC_LABEL[c]}<span class="sm">${rs.length}개 항목</span></th></tr>`;
+      html+=rs.map(i=>`<tr>
+        <td data-l="부위"><span class="sys">${esc(i.sys)}</span></td>
+        <td class="model" data-l="대상">${esc(i.name)}</td>
+        <td data-l="작업"><span class="act-chip a-${esc(i.action.split("·")[0])}">${esc(i.action)}</span></td>
+        <td class="note" data-l="비고">${esc(i.note)||"—"}</td>
+        <td class="rowact"><button data-edititem="${i.id}">수정</button>
+          <button class="del" data-delitem="${i.id}">삭제</button></td></tr>`).join("");
+    });
+    html+=`</tbody></table><div style="padding:13px;border-top:1px solid var(--line)">
+      <button class="act ghost" data-additem="10">일상 항목 추가</button></div></div>`;
+  }
+
+  const sched=trackedMaster();
+  if(sched.length){
+    html+=`<h3 class="sect">정비주기표<span>50시간 이상 · 장비별 진행 상황은 장비관리에서 봅니다</span></h3>
+      <div class="card"><table><thead><tr>
+        <th style="width:100px">부위</th><th>점검 대상</th><th style="width:100px">작업</th>
+        <th style="width:136px">용량 및 수량 기준</th><th>비고</th><th style="width:100px"></th>
+        </tr></thead><tbody>`;
+    CYC.filter(c=>c>=TRACK_FROM).forEach(c=>{
+      const rs=sched.filter(i=>i.cycleH===c); if(!rs.length) return;
+      html+=`<tr class="grprow"><th class="grp" colspan="6">${CYC_LABEL[c]}<span class="sm">${rs.length}개 항목</span></th></tr>`;
+      html+=rs.map(i=>`<tr>
+        <td data-l="부위"><span class="sys">${esc(i.sys)}</span></td>
+        <td class="model" data-l="대상">${esc(i.name)}</td>
+        <td data-l="작업"><span class="act-chip a-${esc(i.action.split("·")[0])}">${esc(i.action)}</span></td>
+        <td class="note" data-l="기준">${esc(i.qty)||"—"}</td>
+        <td class="note" data-l="비고">${esc(i.note)||"—"}</td>
+        <td class="rowact"><button data-edititem="${i.id}">수정</button>
+          <button class="del" data-delitem="${i.id}">삭제</button></td></tr>`).join("");
+    });
+    html+=`</tbody></table><div style="padding:13px;border-top:1px solid var(--line)">
+      <button class="act ghost" data-additem="500">정비주기 항목 추가</button></div></div>`;
+  }
+  if(!state.master.length)
+    html+=`<div class="card"><div class="empty">항목이 없습니다.
+      <div style="margin-top:14px"><button class="act key" id="btnRestore">표준 가이드 복원</button></div></div></div>`;
+  $("#guideBody").innerHTML=html;
+}
+
+/* ===== 이력 ===== */
+let histTab="정비";
+function renderHist(){
+  $("#histFilters").innerHTML=["정비","점검 이상"].map(v=>
+    `<button data-ht="${v}" aria-pressed="${v===histTab}">${v} 이력</button>`).join("");
+  if(histTab==="정비"){
+    const rows=[...state.done].sort((a,b)=>b.date.localeCompare(a.date));
+    $("#histTable").innerHTML=rows.length?`<table><thead><tr>
+      <th style="width:104px">실시일</th><th style="width:140px">차량번호</th><th style="width:88px">부위</th>
+      <th>점검 대상</th><th style="width:78px">작업</th><th style="width:92px">시점</th>
+      <th style="width:100px">기록자</th><th>비고</th></tr></thead><tbody>${rows.map(r=>{const e=eqById(r.eqId);
+        return `<tr>
+          <td class="num" data-l="실시일">${r.date}</td>
+          <td data-l="차량번호">${e?plateHtml(e.plate):`<span class="plate blank">—</span>`}</td>
+          <td data-l="부위"><span class="sys">${esc(r.sys)}</span></td>
+          <td class="model" data-l="대상">${esc(r.name)}</td>
+          <td data-l="작업"><span class="act-chip a-${esc((r.action||"교체").split("·")[0])}">${esc(r.action||"교체")}</span></td>
+          <td class="num" data-l="시점">${r.hours==null?"—":n(r.hours)+" h"}</td>
+          <td class="note" data-l="기록자">${esc(r.by)||"—"}</td>
+          <td class="note" data-l="비고">${esc(r.note)||"—"}</td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">아직 완료 기록이 없습니다.</div>`; return;
+  }
+  const rows=[];
+  state.meter.forEach(m=>{ const ck=m.checks||{};
+    Object.keys(ck).forEach(iid=>{ if(ck[iid]!=="ng") return;
+      const it=state.master.find(x=>x.id===iid);
+      rows.push({date:m.date,eqId:m.eqId,name:it?it.name:"삭제된 항목",sys:it?it.sys:"—",
+        note:m.ckNote||""}); }); });
+  rows.sort((a,b)=>b.date.localeCompare(a.date));
+  $("#histTable").innerHTML=rows.length?`<table><thead><tr>
+    <th style="width:104px">점검일</th><th style="width:140px">차량번호</th><th style="width:88px">부위</th>
+    <th>이상 항목</th><th>특이사항</th></tr></thead><tbody>${rows.map(r=>{const e=eqById(r.eqId);
+      return `<tr>
+        <td class="num" data-l="점검일">${r.date}</td>
+        <td data-l="차량번호">${e?plateHtml(e.plate):`<span class="plate blank">—</span>`}</td>
+        <td data-l="부위"><span class="sys">${esc(r.sys)}</span></td>
+        <td class="model" data-l="항목" style="color:var(--bad)">${esc(r.name)}</td>
+        <td class="note" data-l="특이사항">${esc(r.note)||"—"}</td>
+        <td class="note" data-l="AI 제안">${esc(r.ai)||"—"}</td></tr>`;}).join("")}</tbody></table>`
+    :`<div class="empty">일상점검에서 이상으로 잡힌 항목이 없습니다.</div>`;
+}
+
+function renderAll(){ renderStats(); renderYard(); renderLog(); renderPart(); renderGuide(); renderHist(); }
+
+/* ===== 탭 ===== */
+$$('.tab[role="tab"]').forEach(t=>t.onclick=()=>{
+  $$('.tab[role="tab"]').forEach(x=>x.setAttribute("aria-selected",x===t));
+  $$(".pane").forEach(p=>p.classList.toggle("on",p.id==="pane-"+t.dataset.pane));
+});
+const bad=(sel,on)=>$(sel).classList.toggle("invalid",on);
+function fillSelect(sel,arr,val){
+  $(sel).innerHTML=arr.map(o=>typeof o==="string"
+    ?`<option value="${esc(o)}">${esc(o)}</option>`
+    :`<option value="${esc(o.v)}">${esc(o.t)}</option>`).join("");
+  if(val!=null) $(sel).value=val;
+}
+$$("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+
+/* ===== 장비 ===== */
+let eqEditId=null;
+function openEquip(loc,eq){
+  eqEditId=eq?eq.id:null;
+  $("#eqTitle").textContent=eq?"장비 수정":"장비 추가";
+  $("#eqWhere").textContent=eq?eq.loc:loc;
+  $("#dlgEquip").dataset.loc=eq?eq.loc:loc;
+  $("#eqPlate").value=eq?(eq.plate??""):"";
+  $("#eqModel").value=eq?eq.model:"";
+  $("#eqYear").value=eq?(eq.year??""):"";
+  $("#eqHours").value=eq?(eq.hours??""):"";
+  $("#eqNote").value=eq?eq.note:"";
+  ["#f-plate","#f-model","#f-year","#f-hours"].forEach(s=>bad(s,false));
+  $("#dlgEquip").showModal(); setTimeout(()=>$("#eqPlate").focus(),30);
+}
+$("#eqSave").onclick=()=>{
+  const plate=$("#eqPlate").value.trim(), model=$("#eqModel").value.trim();
+  const yRaw=$("#eqYear").value.trim(), hRaw=$("#eqHours").value.trim();
+  const y=numOrNull(yRaw), h=numOrNull(hRaw), ty=new Date().getFullYear();
+  const dup=plate&&state.equipment.some(e=>e.id!==eqEditId&&norm(e.plate)===norm(plate));
+  $("#plateErr").textContent=dup?"이미 등록된 차량번호입니다.":"차량번호를 입력하세요.";
+  const e0=!plate||dup, e1=!model;
+  const e2=yRaw!==""&&(!Number.isInteger(y)||y<1970||y>ty);
+  const e3=hRaw!==""&&(h==null||h<0);
+  bad("#f-plate",e0);bad("#f-model",e1);bad("#f-year",e2);bad("#f-hours",e3);
+  if(e0||e1||e2||e3) return;
+  const data={plate,model,year:y,hours:h,note:$("#eqNote").value.trim()};
+  if(eqEditId){ Object.assign(eqById(eqEditId),data); toast("장비 정보를 수정했습니다."); }
+  else{ state.equipment.push({id:uid(),loc:$("#dlgEquip").dataset.loc,...data});
+    toast(`${plate} 등록. 표준 점검가이드 ${n(state.master.length)}개 항목이 바로 적용됩니다.`); }
+  save(); renderAll(); $("#dlgEquip").close();
+};
+
+/* ===== 가이드 항목 ===== */
+let itEditId=null;
+function openItem(defCycle,it){
+  itEditId=it?it.id:null;
+  $("#itTitle").textContent=it?"항목 수정":"항목 추가";
+  fillSelect("#itCycle",CYC.map(c=>({v:String(c),t:CYC_LABEL[c]})), it?String(it.cycleH):String(defCycle||500));
+  fillSelect("#itSys",SYSTEMS, it?it.sys:"엔진");
+  fillSelect("#itAct",ACTIONS, it?it.action:"교체");
+  $("#itName").value=it?it.name:"";
+  $("#itQty").value=it?it.qty:"";
+  $("#itNote").value=it?it.note:"";
+  bad("#f-itname",false);
+  $("#dlgItem").showModal(); setTimeout(()=>$("#itName").focus(),30);
+}
+$("#itSave").onclick=()=>{
+  const name=$("#itName").value.trim(); bad("#f-itname",!name); if(!name) return;
+  const data={cycleH:Number($("#itCycle").value), sys:$("#itSys").value, name,
+    action:$("#itAct").value, qty:$("#itQty").value.trim(), note:$("#itNote").value.trim()};
+  if(itEditId) Object.assign(state.master.find(x=>x.id===itEditId),data);
+  else state.master.push({id:uid(),...data});
+  save(); renderAll(); $("#dlgItem").close();
+  toast(itEditId?"수정했습니다. 전 장비에 반영됩니다.":"항목을 추가했습니다. 전 장비에 반영됩니다.");
+};
+
+/* ===== 완료 ===== */
+let dnKey=null;
+function openDone(eqId,itId){
+  const eq=eqById(eqId), it=state.master.find(x=>x.id===itId);
+  if(!eq||!it) return;
+  dnKey={eqId,itId};
+  $("#dnWhat").innerHTML=`<b>${esc(eqLabel(eq))}</b><br>${esc(it.sys)} · ${esc(it.name)}
+    <span class="act-chip a-${esc(it.action.split("·")[0])}">${esc(it.action)}</span>`;
+  $("#dnDate").value=todayStr();
+  $("#dnHours").value=eq.hours!=null?eq.hours:"";
+  $("#dnNote").value=""; bad("#f-dnh",false);
+  $("#dlgDone").showModal();
+}
+function recordDone(eqId,itId,date,hours,note){
+  const eq=eqById(eqId), it=state.master.find(x=>x.id===itId); if(!eq||!it) return;
+  state.prog[pkey(eqId,itId)]={h:hours,d:date};
+  state.done.push({id:uid(),itemId:itId,eqId,sys:it.sys,name:it.name,
+    action:it.action,date,hours,note:note||"",by:me||""});
+}
+$("#dnSave").onclick=()=>{
+  if(!dnKey) return;
+  const h=numOrNull($("#dnHours").value);
+  const e=$("#dnHours").value.trim()!==""&&(h==null||h<0);
+  bad("#f-dnh",e); if(e) return;
+  recordDone(dnKey.eqId,dnKey.itId,$("#dnDate").value||todayStr(),h,$("#dnNote").value.trim());
+  const it=state.master.find(x=>x.id===dnKey.itId);
+  save(); renderAll(); $("#dlgDone").close();
+  toast(`${it?it.name:"항목"} 완료를 기록했습니다.`);
+};
+
+/* ===== 내보내기 ===== */
+function equipRows(){
+  return [["위치","차량번호","모델명","연식","운행시간(h)","주기초과","주기임박","기타"],
+    ...LOCATIONS.flatMap(loc=>state.equipment.filter(e=>e.loc===loc).map(e=>{
+      const ss=eqStates(e).map(r=>r.s);
+      return [loc,e.plate||"",e.model,e.year??"",e.hours??"",
+        ss.filter(s=>s.level==="bad").length, ss.filter(s=>s.level==="warn").length, e.note||""];}))];
+}
+function guideRows(){
+  return [["주기(시간)","부위","점검 대상","작업","용량 및 수량 기준","비고"],
+    ...[...state.master].sort((a,b)=>a.cycleH-b.cycleH)
+      .map(i=>[i.cycleH,i.sys,i.name,i.action,i.qty||"",i.note||""])];
+}
+function partRows(){
+  const out=[["차량번호","모델명","주기(시간)","부위","점검 대상","작업","용량 및 수량 기준","마지막 실시일","실시 시점(h)","현재(h)","잔여","상태"]];
+  state.equipment.forEach(eq=>trackedMaster().forEach(it=>{
+    const s=itemState(it,eq), pr=progOf(eq.id,it.id);
+    const lv={bad:"초과",warn:"임박",ok:"여유",unset:"미설정"}[s.level];
+    out.push([eq.plate||"",eq.model,it.cycleH,it.sys,it.name,it.action,it.qty||"",
+      pr?pr.d||"":"",pr&&pr.h!=null?pr.h:"",eq.hours??"",s.text,lv]);}));
+  return out;
+}
+function meterRows(){
+  return [["날짜","차량번호","모델명","계기판(h)","당일 가동(h)","일상점검","이상 건수","특이사항","기록자"],
+    ...[...state.meter].sort((a,b)=>a.date.localeCompare(b.date)).map(m=>{
+      const eq=eqById(m.eqId);
+      const prev=state.meter.filter(x=>x.eqId===m.eqId&&x.date<m.date).sort((a,b)=>b.date.localeCompare(a.date))[0];
+      const ck=m.checks||{}, cnt=Object.keys(ck).length;
+      return [m.date,eq?eq.plate:"",eq?eq.model:"",m.hours,prev?m.hours-prev.hours:"",
+        cnt?`${cnt}개 실시`:"미실시",Object.values(ck).filter(v=>v==="ng").length,m.ckNote||"",m.by||""];})];
+}
+function doneRows(){
+  return [["실시일","차량번호","모델명","부위","점검 대상","작업","실시 시점(h)","기록자","비고"],
+    ...[...state.done].sort((a,b)=>a.date.localeCompare(b.date)).map(r=>{
+      const eq=eqById(r.eqId);
+      return [r.date,eq?eq.plate:"",eq?eq.model:"",r.sys,r.name,r.action||"",r.hours??"",r.by||"",r.note||""];})];
+}
+const toCSV=rows=>rows.map(r=>r.map(c=>{const s=String(c??"");
+  return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\r\n");
+const toTSV=rows=>rows.map(r=>r.map(c=>String(c??"").replace(/[\t\n\r]/g," ")).join("\t")).join("\n");
+const stamp=()=>todayStr().replace(/-/g,"");
+function download(name,text,mime){
+  try{ const blob=new Blob(["\uFEFF"+text],{type:mime+";charset=utf-8"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500); toast(name+" 저장했습니다.");
+  }catch(err){ toast("파일 저장이 막혀 있습니다. 복사를 이용하세요."); }
+}
+async function copyText(text,label){
+  try{ await navigator.clipboard.writeText(text); toast(label+" 복사했습니다. 시트에 붙여넣으세요."); }
+  catch(err){ const ta=document.createElement("textarea"); ta.value=text;
+    ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+    const ok=document.execCommand("copy"); ta.remove();
+    toast(ok?label+" 복사했습니다.":"복사에 실패했습니다."); }
+}
+const EXPORTS=[
+  {k:"equip",name:"장비현황",rows:equipRows,count:()=>state.equipment.length,unit:"대"},
+  {k:"guide",name:"표준 점검가이드",rows:guideRows,count:()=>state.master.length,unit:"개 항목"},
+  {k:"part", name:"장비관리",rows:partRows,count:()=>state.equipment.length*trackedMaster().length,unit:"행"},
+  {k:"meter",name:"가동일지",rows:meterRows,count:()=>state.meter.length,unit:"건"},
+  {k:"done", name:"정비이력",rows:doneRows,count:()=>state.done.length,unit:"건"}
+];
+$("#btnExport").onclick=()=>{
+  $("#expList").innerHTML=EXPORTS.map(x=>`<div class="exp-row">
+    <div class="t"><b>${x.name}</b><span class="num">${n(x.count())}${x.unit}</span></div>
+    <button data-copy="${x.k}" ${x.count()?"":"disabled"}>복사</button>
+    <button data-file="${x.k}" ${x.count()?"":"disabled"}>CSV 저장</button></div>`).join("")
+    +`<div class="exp-row"><div class="t"><b>전체 백업</b><span>가져오기로 되돌릴 수 있습니다</span></div>
+      <button data-backup="1">JSON 저장</button></div>`;
+  $("#dlgExport").showModal();
+};
+
+/* ===== 가져오기 ===== */
+function sanEquip(o){ if(!o||typeof o!=="object")return null;
+  const plate=String(o.plate??"").trim(), model=String(o.model??"").trim();
+  if(!plate&&!model) return null;
+  return {loc:String(o.loc??"").trim(),plate,model:model||plate,year:numOrNull(o.year),
+    hours:numOrNull(o.hours),note:String(o.note??"").trim(),_src:String(o.id??"")}; }
+function sanMaster(o){ if(!o||typeof o!=="object")return null;
+  const name=String(o.name??"").trim(); if(!name)return null;
+  return {_src:String(o.id??""),cycleH:CYC.includes(Number(o.cycleH))?Number(o.cycleH):500,
+    sys:SYSTEMS.includes(o.sys)?o.sys:"엔진",name,action:ACTIONS.includes(o.action)?o.action:"교체",
+    qty:String(o.qty??""),note:String(o.note??"")}; }
+function sanMeter(o){ if(!o||typeof o!=="object")return null;
+  const date=String(o.date??""), h=numOrNull(o.hours);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||h==null)return null;
+  const ck={}; if(o.checks&&typeof o.checks==="object")
+    Object.keys(o.checks).forEach(k=>{ if(o.checks[k]==="ok"||o.checks[k]==="ng") ck[k]=o.checks[k]; });
+  return {eqId:String(o.eqId??""),date,hours:h,checks:ck,ckNote:String(o.ckNote??""),
+    ai:(o.ai&&typeof o.ai==="object")?o.ai:null}; }
+function sanDone(o){ if(!o||typeof o!=="object")return null;
+  const date=String(o.date??""); if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;
+  return {eqId:String(o.eqId??""),itemId:String(o.itemId??""),sys:String(o.sys??""),
+    name:String(o.name??"").trim(),action:String(o.action??""),date,
+    hours:numOrNull(o.hours),note:String(o.note??"").trim()}; }
+
+let pending=null;
+function readImport(file){
+  if(!file) return;
+  if(!/\.json$/i.test(file.name)){ showImportError("JSON 파일만 불러올 수 있습니다."); return; }
+  if(file.size>8*1024*1024){ showImportError("파일이 8MB를 넘습니다."); return; }
+  const fr=new FileReader();
+  fr.onerror=()=>showImportError("파일을 읽지 못했습니다.");
+  fr.onload=()=>{
+    let raw; try{ raw=JSON.parse(String(fr.result).replace(/^\uFEFF/,"")); }
+    catch(e){ showImportError("JSON 형식이 아닙니다."); return; }
+    const A=k=>Array.isArray(raw[k])?raw[k]:[];
+    const p={name:file.name, prog:(raw.prog&&typeof raw.prog==="object")?raw.prog:{},
+      eq:A("equipment").map(sanEquip).filter(Boolean),
+      ms:A("master").map(sanMaster).filter(Boolean),
+      mt:A("meter").map(sanMeter).filter(Boolean),
+      dn:A("done").map(sanDone).filter(Boolean)};
+    if(!p.eq.length&&!p.ms.length&&!p.mt.length){ showImportError("불러올 내용이 없습니다."); return; }
+    p.badLoc=p.eq.filter(e=>!LOCATIONS.includes(e.loc)).length;
+    pending=p; showImportConfirm();
+  };
+  fr.readAsText(file,"utf-8");
+}
+function showImportPick(){
+  pending=null; $("#impTitle").textContent="데이터 가져오기"; $("#impApply").style.display="none";
+  $("#impBody").innerHTML=`<div class="drop" id="drop">
+    <p>내보내기로 저장한 <b>JSON 백업 파일</b>을 불러옵니다.<br>파일을 끌어다 놓거나 아래에서 선택하세요.</p>
+    <button type="button" class="act" id="pick">파일 선택</button></div>`;
+  const drop=$("#drop"); $("#pick").onclick=()=>$("#fileIn").click();
+  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+  drop.addEventListener("drop",e=>readImport(e.dataTransfer.files[0]));
+}
+function showImportError(msg){
+  $("#impApply").style.display="none";
+  $("#impBody").innerHTML=`<div class="warnbox" style="margin-top:0">${esc(msg)}</div>
+    <div style="margin-top:14px"><button type="button" class="act ghost" id="again">다시 선택</button></div>`;
+  $("#again").onclick=showImportPick;
+}
+function showImportConfirm(){
+  const p=pending; $("#impTitle").textContent="가져올 내용 확인"; $("#impApply").style.display="";
+  $("#impBody").innerHTML=`<p style="margin:0 0 12px;font-size:13px;color:var(--ink-soft)">${esc(p.name)}</p>
+    <div class="sum">
+      <div><b class="num">${n(p.eq.length)}</b><span>장비</span></div>
+      <div><b class="num">${n(p.ms.length)}</b><span>가이드 항목</span></div>
+      <div><b class="num">${n(p.mt.length)}</b><span>가동기록</span></div>
+      <div><b class="num">${n(p.dn.length)}</b><span>정비이력</span></div></div>
+    <label class="mode"><input type="radio" name="impmode" value="merge" checked><b>합치기</b>
+      <span>차량번호가 같으면 갱신, 없으면 신규 등록. 중복 기록은 건너뜁니다.</span></label>
+    <label class="mode"><input type="radio" name="impmode" value="replace"><b>전체 교체</b>
+      <span>지금 데이터를 모두 지우고 파일 내용으로 바꿉니다.</span></label>
+    ${p.badLoc?`<div class="warnbox">구역 이름이 맞지 않는 장비 ${n(p.badLoc)}대는 제외됩니다.</div>`:""}`;
+}
+function applyImport(){
+  const p=pending; if(!p) return;
+  const mode=($('input[name="impmode"]:checked')||{}).value||"merge";
+  const eqIn=p.eq.filter(e=>LOCATIONS.includes(e.loc));
+  const emap={}, imap={};
+  const strip=e=>({loc:e.loc,plate:e.plate,model:e.model,year:e.year,hours:e.hours,note:e.note});
+  const ikey=i=>`${i.cycleH}|${norm(i.name)}|${i.action}`;
+
+  if(mode==="replace"){
+    state.equipment=eqIn.map(e=>{const id=uid();emap[e._src]=id;return {id,...strip(e)};});
+    state.master=p.ms.map(i=>{const id=uid();imap[i._src]=id;
+      return {id,cycleH:i.cycleH,sys:i.sys,name:i.name,action:i.action,qty:i.qty,note:i.note};});
+    if(!state.master.length) state.master=buildMaster();
+    state.prog={};
+    Object.keys(p.prog).forEach(k=>{const [oe,oi]=k.split("|");
+      if(emap[oe]&&imap[oi]) state.prog[pkey(emap[oe],imap[oi])]=p.prog[k];});
+    state.meter=p.mt.filter(x=>emap[x.eqId]).map(x=>{const ck={};
+      Object.keys(x.checks).forEach(k=>{if(imap[k])ck[imap[k]]=x.checks[k];});
+      return {id:uid(),...x,checks:ck,eqId:emap[x.eqId]};});
+    state.done=p.dn.filter(x=>emap[x.eqId]).map(x=>({id:uid(),...x,eqId:emap[x.eqId],itemId:imap[x.itemId]||""}));
+    finishImport(`전체 교체 완료. 장비 ${n(state.equipment.length)}대.`); return;
+  }
+
+  let added=0,updated=0;
+  eqIn.forEach(e=>{
+    const hit=state.equipment.find(x=>norm(x.plate)&&norm(x.plate)===norm(e.plate));
+    if(hit){ hit.model=e.model||hit.model; hit.loc=e.loc||hit.loc;
+      if(e.year!=null)hit.year=e.year;
+      if(e.hours!=null)hit.hours=Math.max(hit.hours??0,e.hours);
+      if(e.note)hit.note=e.note; emap[e._src]=hit.id; updated++; }
+    else{ const id=uid(); state.equipment.push({id,...strip(e)}); emap[e._src]=id; added++; }
+  });
+  const byKey={}; state.master.forEach(m=>byKey[ikey(m)]=m.id);
+  let msA=0;
+  p.ms.forEach(i=>{
+    if(byKey[ikey(i)]){ imap[i._src]=byKey[ikey(i)]; return; }
+    const id=uid(); state.master.push({id,cycleH:i.cycleH,sys:i.sys,name:i.name,
+      action:i.action,qty:i.qty,note:i.note});
+    byKey[ikey(i)]=id; imap[i._src]=id; msA++;
+  });
+  const te=id=>emap[id]||(state.equipment.some(e=>e.id===id)?id:"");
+  const ti=id=>imap[id]||(state.master.some(m=>m.id===id)?id:"");
+  Object.keys(p.prog).forEach(k=>{const [oe,oi]=k.split("|");
+    const e=te(oe), i=ti(oi); if(!e||!i) return;
+    const cur=state.prog[pkey(e,i)], inc=p.prog[k];
+    if(!cur || (inc.d&&(!cur.d||inc.d>cur.d))) state.prog[pkey(e,i)]=inc;});
+  const msig=m=>m.eqId+"|"+m.date;
+  const mseen=new Set(state.meter.map(msig)); let mtA=0;
+  p.mt.forEach(x=>{const e=te(x.eqId); if(!e) return;
+    const ck={}; Object.keys(x.checks).forEach(k=>{const i=ti(k); if(i)ck[i]=x.checks[k];});
+    const rec={id:uid(),...x,checks:ck,eqId:e}; if(mseen.has(msig(rec)))return;
+    mseen.add(msig(rec)); state.meter.push(rec); mtA++;});
+  const dsig=r=>[r.eqId,r.date,r.name].join("|");
+  const dseen=new Set(state.done.map(dsig));
+  p.dn.forEach(x=>{const e=te(x.eqId); if(!e) return;
+    const rec={id:uid(),...x,eqId:e,itemId:ti(x.itemId)}; if(dseen.has(dsig(rec)))return;
+    dseen.add(dsig(rec)); state.done.push(rec);});
+  state.equipment.forEach(e=>{const m=meterOf(e.id)[0];
+    if(m&&(e.hours==null||m.hours>e.hours)) e.hours=m.hours;});
+  finishImport(`장비 ${n(added)}대 추가 / ${n(updated)}대 갱신 · 가이드 ${n(msA)} · 가동 ${n(mtA)}`);
+}
+function finishImport(msg){ save(); renderAll(); $("#dlgImport").close(); pending=null; toast(msg); }
+$("#btnImport").onclick=()=>{ showImportPick(); $("#dlgImport").showModal(); };
+$("#impApply").onclick=applyImport;
+$("#fileIn").onchange=e=>{ readImport(e.target.files[0]); e.target.value=""; };
+
+/* ===== 삭제 확인 ===== */
+let delFn=null;
+function askDel(title,body,fn,label,color){
+  $("#delTitle").textContent=title; $("#delBody").textContent=body; delFn=fn;
+  $("#delGo").textContent=label||"삭제";
+  $("#delGo").style.background=color||"var(--bad)";
+  $("#delGo").style.borderColor=color||"var(--bad)";
+  $("#dlgDel").showModal();
+}
+$("#delGo").onclick=()=>{ if(delFn)delFn(); $("#dlgDel").close(); };
+
+/* ===== 이벤트 ===== */
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("button"); if(!t) return;
+
+  if(t.dataset.add) openEquip(t.dataset.add,null);
+  if(t.dataset.edit) openEquip(null,eqById(t.dataset.edit));
+  if(t.dataset.additem) openItem(Number(t.dataset.additem),null);
+  if(t.dataset.edititem) openItem(null,state.master.find(i=>i.id===t.dataset.edititem));
+  if(t.dataset.check) openCheck(t.dataset.check);
+  if(t.id==="btnRestore"){ state.master=buildMaster(); save(); renderAll(); toast("표준 가이드를 복원했습니다."); }
+
+  if(t.dataset.done){ const [eqId,itId]=t.dataset.done.split("|"); openDone(eqId,itId); }
+  if(t.dataset.ckdone){
+    const eq=eqById(ckEq), it=state.master.find(x=>x.id===t.dataset.ckdone);
+    if(!eq||!it) return;
+    recordDone(ckEq,it.id,logDate,eq.hours!=null?eq.hours:null,"일상점검 화면에서 기록");
+    save(); drawCheck(); renderStats();
+    toast(`${it.name} 완료. 잔여가 다시 채워집니다.`);
+  }
+
+  if(t.dataset.baseall){
+    const eq=eqById(t.dataset.baseall);
+    if(eq.hours==null){ toast("이 장비의 운행시간이 없습니다."); return; }
+    const targets=trackedMaster().filter(it=>!progOf(eq.id,it.id));
+    if(!targets.length){ toast("기준점이 비어 있는 항목이 없습니다."); return; }
+    askDel("기준점 일괄 설정",
+      `${eqLabel(eq)}의 기준점 미입력 항목 ${targets.length}개를 현재 ${n(eq.hours)}시간 기준으로 설정합니다. 실제 정비 시점과 다르면 잔여가 실제보다 길게 나옵니다.`,
+      ()=>{ targets.forEach(it=>{state.prog[pkey(eq.id,it.id)]={h:eq.hours,d:todayStr()};});
+        save(); renderAll(); toast(`${targets.length}개 항목의 기준점을 설정했습니다.`); },
+      "설정","var(--steel)");
+  }
+
+  if(t.dataset.del){
+    const eq=eqById(t.dataset.del);
+    const nm=state.meter.filter(m=>m.eqId===eq.id).length;
+    askDel("장비 삭제",`${eq.loc}의 ${eqLabel(eq)}을(를) 삭제합니다. 가동기록 ${nm}건과 정비 진행상황이 함께 지워집니다.`,
+      ()=>{ state.equipment=state.equipment.filter(e=>e.id!==eq.id);
+        state.meter=state.meter.filter(m=>m.eqId!==eq.id);
+        state.done=state.done.filter(r=>r.eqId!==eq.id);
+        Object.keys(state.prog).forEach(k=>{ if(k.startsWith(eq.id+"|")) delete state.prog[k]; });
+        save(); renderAll(); toast("장비를 삭제했습니다."); });
+  }
+  if(t.dataset.delitem){
+    const i=state.master.find(x=>x.id===t.dataset.delitem);
+    askDel("가이드 항목 삭제",`${i.sys} · ${i.name}을(를) 표준 가이드에서 삭제합니다. 전 장비에 반영되며 해당 항목의 진행상황도 지워집니다.`,
+      ()=>{ state.master=state.master.filter(x=>x.id!==i.id);
+        Object.keys(state.prog).forEach(k=>{ if(k.endsWith("|"+i.id)) delete state.prog[k]; });
+        save(); renderAll(); toast("삭제했습니다."); });
+  }
+  if(t.dataset.delmeter){
+    askDel("가동기록 삭제","이 가동기록과 함께 저장된 일상점검 결과가 삭제됩니다.",
+      ()=>{ state.meter=state.meter.filter(m=>m.id!==t.dataset.delmeter); save(); renderAll(); toast("삭제했습니다."); });
+  }
+
+  if(t.dataset.ck){
+    const id=t.dataset.ck, v=t.dataset.v;
+    if(ckTmp[id]===v) delete ckTmp[id]; else ckTmp[id]=v;
+    $$(`#ckBody [data-ck="${id}"]`).forEach(b=>b.setAttribute("aria-pressed", ckTmp[id]===b.dataset.v));
+  }
+  if(t.dataset.plv){ partLv=(partLv===t.dataset.plv?"전체":t.dataset.plv); renderPart(); }
+  if(t.dataset.ht){ histTab=t.dataset.ht; renderHist(); }
+
+  if(t.dataset.copy){ const x=EXPORTS.find(v=>v.k===t.dataset.copy); copyText(toTSV(x.rows()),x.name); }
+  if(t.dataset.file){ const x=EXPORTS.find(v=>v.k===t.dataset.file);
+    download(`${x.name}_${stamp()}.csv`,toCSV(x.rows()),"text/csv"); }
+  if(t.dataset.backup){ download(`중장비관리_백업_${stamp()}.json`,JSON.stringify(state,null,2),"application/json"); }
+});
+
+$("#btnWho").onclick=()=>{ askName(true); setStatus(online?"on":(String(firebaseConfig.apiKey).startsWith("PASTE_")?"local":"off"),
+  online?whoLabel():(String(firebaseConfig.apiKey).startsWith("PASTE_")?"로컬 모드":"오프라인")); };
+
+const d=new Date();
+$("#today").textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준`;
+$("#logDate").value=logDate;
+load();
+
+</script>
